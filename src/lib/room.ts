@@ -9,7 +9,6 @@ import {
 } from "firebase/database";
 import { getFirebaseDb, ensureSignedIn } from "./firebase";
 import { generateRoomCode } from "./roomCode";
-import { pickRoundLocations } from "./locations";
 import { distanceKm, scoreFromDistance } from "./scoring";
 import {
   DEFAULT_SETTINGS,
@@ -114,17 +113,12 @@ export function subscribeRoom(
  * Empieza la partida: genera las ubicaciones y lanza la primera ronda.
  * Solo el host debería llamar a esto.
  */
-export async function startGame(code: string): Promise<void> {
+export async function startGame(code: string, locations: LatLng[]): Promise<void> {
   const db = getFirebaseDb();
   const roomRef = ref(db, `rooms/${code}`);
   const snap = await get(roomRef);
   if (!snap.exists()) throw new Error("La sala no existe.");
   const room = snap.val() as Room;
-
-  const locations = pickRoundLocations(
-    room.settings.region,
-    room.settings.rounds,
-  );
   const now = Date.now();
   const endsAt = now + room.settings.roundDurationSec * 1000;
 

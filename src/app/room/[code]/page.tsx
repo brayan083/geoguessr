@@ -20,6 +20,8 @@ import { Lobby } from "@/components/Lobby";
 import { GameView } from "@/components/GameView";
 import { RoundResults } from "@/components/RoundResults";
 import { FinalScoreboard } from "@/components/FinalScoreboard";
+import { pickRoundLocations } from "@/lib/locations";
+import { useGoogleMapsLoader } from "@/lib/useGoogleMapsLoader";
 import type { LatLng, Room, RoomSettings } from "@/types/game";
 
 export default function RoomPage() {
@@ -27,6 +29,7 @@ export default function RoomPage() {
   const router = useRouter();
   const code = (params.code ?? "").toString().toUpperCase();
 
+  const { isLoaded: mapsLoaded } = useGoogleMapsLoader();
   const [room, setRoom] = useState<Room | null>(null);
   const [myId, setMyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -104,7 +107,10 @@ export default function RoomPage() {
         players={room.players ?? {}}
         settings={room.settings}
         isHost={isHost}
-        onStart={() => startGame(code)}
+        onStart={async () => {
+          const locs = await pickRoundLocations(room.settings.rounds);
+          await startGame(code, locs);
+        }}
         onUpdateSettings={updateSettings}
       />
     );

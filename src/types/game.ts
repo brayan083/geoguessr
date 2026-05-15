@@ -35,7 +35,6 @@ export type RoomStatus =
 export interface RoomSettings {
   rounds: number;
   roundDurationSec: number;
-  region: "world" | "europe" | "americas" | "asia";
   allowMove: boolean;
   allowZoom: boolean;
 }
@@ -55,7 +54,6 @@ export interface Room {
 export const DEFAULT_SETTINGS: RoomSettings = {
   rounds: 5,
   roundDurationSec: 60,
-  region: "world",
   allowMove: true,
   allowZoom: true,
 };

@@ -29,34 +29,33 @@ export function StreetViewPanorama({ position, allowMove, allowZoom }: Props) {
     let cancelled = false;
     const svService = new google.maps.StreetViewService();
 
-    const find = (radius: number, outdoorOnly: boolean) =>
+    const find = (radius: number) =>
       new Promise<google.maps.StreetViewPanoramaData | null>((resolve) => {
-        const req: google.maps.StreetViewLocationRequest = {
-          location: position,
-          radius,
-        };
-        if (outdoorOnly) {
-          req.source = google.maps.StreetViewSource.OUTDOOR;
-        }
-        svService.getPanorama(req, (data, status) => {
-          if (
-            status === google.maps.StreetViewStatus.OK &&
-            data?.location?.pano
-          ) {
-            resolve(data);
-          } else {
-            resolve(null);
-          }
-        });
+        svService.getPanorama(
+          {
+            location: position,
+            radius,
+            source: google.maps.StreetViewSource.OUTDOOR,
+          },
+          (data, status) => {
+            if (
+              status === google.maps.StreetViewStatus.OK &&
+              data?.location?.pano &&
+              data.links && data.links.length > 0
+            ) {
+              resolve(data);
+            } else {
+              resolve(null);
+            }
+          },
+        );
       });
 
     (async () => {
-      // 1) Outdoor cercano (calidad alta)
-      let data = await find(5_000, true);
-      // 2) Outdoor lejano
-      if (!data) data = await find(50_000, true);
-      // 3) Cualquier panorama (incluye PhotoSpheres como último recurso)
-      if (!data) data = await find(50_000, false);
+      // 1) Outdoor cercano con navegación
+      let data = await find(5_000);
+      // 2) Outdoor lejano con navegación
+      if (!data) data = await find(50_000);
 
       if (cancelled || !data?.location?.pano) {
         if (!data) console.warn("Sin Street View para", position);

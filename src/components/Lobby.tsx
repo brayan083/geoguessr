@@ -113,22 +113,6 @@ export function Lobby({
                   ))}
                 </select>
               </label>
-              <label className="block text-sm">
-                <span className="mb-1 block text-slate-400">Región</span>
-                <select
-                  value={settings.region}
-                  onChange={(e) =>
-                    onUpdateSettings({ region: e.target.value as any })
-                  }
-                  disabled={!isHost}
-                  className="w-full rounded bg-slate-900 px-2 py-1 ring-1 ring-slate-700 disabled:opacity-60"
-                >
-                  <option value="world">Mundial</option>
-                  <option value="europe">Europa</option>
-                  <option value="americas">Américas</option>
-                  <option value="asia">Asia</option>
-                </select>
-              </label>
               <label className="flex items-center gap-2 text-sm">
                 <input
                   type="checkbox"

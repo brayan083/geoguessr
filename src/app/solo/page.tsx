@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StreetViewPanorama } from "@/components/StreetViewPanorama";
 import { GuessMap } from "@/components/GuessMap";
 import { Timer } from "@/components/Timer";
 import { pickRoundLocations } from "@/lib/locations";
+import { useGoogleMapsLoader } from "@/lib/useGoogleMapsLoader";
 import { distanceKm, formatDistance, scoreFromDistance } from "@/lib/scoring";
 import { DEFAULT_SETTINGS, type LatLng } from "@/types/game";
 
@@ -21,15 +22,22 @@ interface RoundLog {
 
 export default function SoloPage() {
   const router = useRouter();
-  const locations = useMemo(
-    () => pickRoundLocations("world", TOTAL_ROUNDS),
-    [],
-  );
+  const { isLoaded } = useGoogleMapsLoader();
+  const [locations, setLocations] = useState<LatLng[]>([]);
   const [round, setRound] = useState(0);
   const [guess, setGuess] = useState<LatLng | null>(null);
-  const [phase, setPhase] = useState<"play" | "result" | "final">("play");
-  const [endsAt, setEndsAt] = useState(Date.now() + DURATION_SEC * 1000);
+  const [phase, setPhase] = useState<"loading" | "play" | "result" | "final">("loading");
+  const [endsAt, setEndsAt] = useState(0);
   const [log, setLog] = useState<RoundLog[]>([]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    pickRoundLocations(TOTAL_ROUNDS).then((locs) => {
+      setLocations(locs);
+      setEndsAt(Date.now() + DURATION_SEC * 1000);
+      setPhase("play");
+    });
+  }, [isLoaded]);
 
   const actual = locations[round];
 
@@ -38,10 +46,7 @@ export default function SoloPage() {
     const g = guess;
     const d = g ? distanceKm(g, actual) : 20000;
     const s = g ? scoreFromDistance(d) : 0;
-    setLog((prev) => [
-      ...prev,
-      { actual, guess: g, distance: d, score: s },
-    ]);
+    setLog((prev) => [...prev, { actual, guess: g, distance: d, score: s }]);
     setPhase("result");
   };
 
@@ -73,9 +78,7 @@ export default function SoloPage() {
                 className="flex justify-between rounded bg-slate-800 px-3 py-2 ring-1 ring-slate-700"
               >
                 <span>Ronda {i + 1}</span>
-                <span className="text-slate-400">
-                  {formatDistance(r.distance)}
-                </span>
+                <span className="text-slate-400">{formatDistance(r.distance)}</span>
                 <span className="font-bold text-brand-light">{r.score}</span>
               </li>
             ))}
@@ -110,13 +113,7 @@ export default function SoloPage() {
               reveal={{
                 actual: last.actual,
                 guesses: last.guess
-                  ? [
-                      {
-                        position: last.guess,
-                        color: "#3b82f6",
-                        label: "T",
-                      },
-                    ]
+                  ? [{ position: last.guess, color: "#3b82f6", label: "T" }]
                   : [],
               }}
             />
@@ -128,9 +125,7 @@ export default function SoloPage() {
               {last.guess ? formatDistance(last.distance) : "Sin respuesta"}
             </p>
             <p className="mb-1 text-sm text-slate-400">Puntuación</p>
-            <p className="mb-6 text-3xl font-bold text-brand-light">
-              {last.score}
-            </p>
+            <p className="mb-6 text-3xl font-bold text-brand-light">{last.score}</p>
             <button
               onClick={goNext}
               className="w-full rounded-lg bg-brand py-3 font-bold hover:bg-brand-dark"
@@ -143,10 +138,11 @@ export default function SoloPage() {
     );
   }
 
-  if (!actual) {
+  if (phase === "loading" || !actual) {
     return (
-      <div className="flex h-screen items-center justify-center text-white">
-        Cargando ubicación...
+      <div className="flex h-screen flex-col items-center justify-center gap-3 bg-slate-900 text-white">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+        <p className="text-slate-400">Buscando ubicaciones...</p>
       </div>
     );
   }
