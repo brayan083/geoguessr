@@ -21,6 +21,7 @@ export interface Guess {
 export interface Round {
   index: number;
   location: LatLng;
+  panoId: string;
   startedAt: number;
   endsAt: number;
   guesses: Record<string, Guess>;

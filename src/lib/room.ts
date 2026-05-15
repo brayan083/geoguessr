@@ -16,6 +16,7 @@ import {
   type Room,
   type RoomSettings,
 } from "@/types/game";
+import type { StreetViewLocation } from "./locations";
 
 const ROOM_TTL_MS = 1000 * 60 * 60 * 6; // 6 horas
 
@@ -113,7 +114,7 @@ export function subscribeRoom(
  * Empieza la partida: genera las ubicaciones y lanza la primera ronda.
  * Solo el host debería llamar a esto.
  */
-export async function startGame(code: string, locations: LatLng[]): Promise<void> {
+export async function startGame(code: string, locations: StreetViewLocation[]): Promise<void> {
   const db = getFirebaseDb();
   const roomRef = ref(db, `rooms/${code}`);
   const snap = await get(roomRef);
@@ -123,10 +124,11 @@ export async function startGame(code: string, locations: LatLng[]): Promise<void
   const endsAt = now + room.settings.roundDurationSec * 1000;
 
   const rounds: Record<string, any> = {};
-  locations.forEach((loc, i) => {
+  locations.forEach(({ position, panoId }, i) => {
     rounds[`r${i}`] = {
       index: i,
-      location: loc,
+      location: position,
+      panoId,
       startedAt: i === 0 ? now : 0,
       endsAt: i === 0 ? endsAt : 0,
       guesses: {},
@@ -222,4 +224,34 @@ export async function playAgain(code: string): Promise<void> {
     rounds: {},
     totals,
   });
+}
+
+/**
+ * El anfitrión expulsa a un jugador de la sala.
+ */
+export async function kickPlayer(code: string, playerId: string): Promise<void> {
+  const db = getFirebaseDb();
+  const { remove } = await import("firebase/database");
+  await remove(ref(db, `rooms/${code}/players/${playerId}`));
+  await remove(ref(db, `rooms/${code}/totals/${playerId}`));
+}
+
+/**
+ * El anfitrión cierra la sala (la elimina de Firebase).
+ */
+export async function closeRoom(code: string): Promise<void> {
+  const db = getFirebaseDb();
+  const { remove } = await import("firebase/database");
+  await remove(ref(db, `rooms/${code}`));
+}
+
+/**
+ * Un jugador abandona la sala voluntariamente.
+ */
+export async function leaveRoom(code: string): Promise<void> {
+  const uid = await ensureSignedIn();
+  const db = getFirebaseDb();
+  const { remove } = await import("firebase/database");
+  await remove(ref(db, `rooms/${code}/players/${uid}`));
+  await remove(ref(db, `rooms/${code}/totals/${uid}`));
 }

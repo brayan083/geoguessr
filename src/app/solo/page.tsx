@@ -5,8 +5,9 @@ import { useRouter } from "next/navigation";
 import { StreetViewPanorama } from "@/components/StreetViewPanorama";
 import { GuessMap } from "@/components/GuessMap";
 import { Timer } from "@/components/Timer";
-import { pickRoundLocations } from "@/lib/locations";
+import { pickRoundLocations, type StreetViewLocation } from "@/lib/locations";
 import { useGoogleMapsLoader } from "@/lib/useGoogleMapsLoader";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { distanceKm, formatDistance, scoreFromDistance } from "@/lib/scoring";
 import { DEFAULT_SETTINGS, type LatLng } from "@/types/game";
 
@@ -23,9 +24,10 @@ interface RoundLog {
 export default function SoloPage() {
   const router = useRouter();
   const { isLoaded } = useGoogleMapsLoader();
-  const [locations, setLocations] = useState<LatLng[]>([]);
+  const [locations, setLocations] = useState<StreetViewLocation[]>([]);
   const [round, setRound] = useState(0);
   const [guess, setGuess] = useState<LatLng | null>(null);
+  const [expanded, setExpanded] = useState(false);
   const [phase, setPhase] = useState<"loading" | "play" | "result" | "final">("loading");
   const [endsAt, setEndsAt] = useState(0);
   const [log, setLog] = useState<RoundLog[]>([]);
@@ -44,9 +46,9 @@ export default function SoloPage() {
   const submit = () => {
     if (!actual) return;
     const g = guess;
-    const d = g ? distanceKm(g, actual) : 20000;
+    const d = g ? distanceKm(g, actual.position) : 20000;
     const s = g ? scoreFromDistance(d) : 0;
-    setLog((prev) => [...prev, { actual, guess: g, distance: d, score: s }]);
+    setLog((prev) => [...prev, { actual: actual.position, guess: g, distance: d, score: s }]);
     setPhase("result");
   };
 
@@ -150,7 +152,8 @@ export default function SoloPage() {
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <StreetViewPanorama
-        position={actual}
+        position={actual.position}
+        panoId={actual.panoId}
         allowMove={DEFAULT_SETTINGS.allowMove}
         allowZoom={DEFAULT_SETTINGS.allowZoom}
       />
@@ -159,10 +162,19 @@ export default function SoloPage() {
           Ronda <strong>{round + 1}/{TOTAL_ROUNDS}</strong>
         </div>
         <Timer endsAt={endsAt} onExpire={submit} />
+        <div className="pointer-events-auto">
+          <ThemeToggle />
+        </div>
       </div>
-      <div className="absolute bottom-4 right-4 z-10 h-48 w-72 sm:h-64 sm:w-96">
-        <GuessMap expanded={false} onGuessChange={setGuess} />
-        <div className="absolute -top-12 left-0 right-0 flex justify-end">
+      <div className={`absolute bottom-4 right-4 z-10 transition-all ${expanded ? "h-[70vh] w-[70vw]" : "h-48 w-72 sm:h-64 sm:w-96"}`}>
+        <GuessMap expanded={expanded} onGuessChange={setGuess} />
+        <div className="absolute -top-12 left-0 right-0 flex justify-end gap-2">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="rounded-lg bg-black/70 px-4 py-2 font-bold text-white shadow-lg hover:bg-black/90"
+          >
+            {expanded ? "Colapsar" : "Expandir"}
+          </button>
           <button
             onClick={submit}
             disabled={!guess}

@@ -9,6 +9,9 @@ import {
 } from "@/lib/firebase";
 import {
   joinRoom,
+  kickPlayer,
+  closeRoom,
+  leaveRoom,
   nextRound,
   playAgain,
   showRoundResults,
@@ -60,7 +63,7 @@ export default function RoomPage() {
     if (!code) return;
     const unsub = subscribeRoom(code, (r) => {
       if (!r) {
-        setError("La sala ya no existe");
+        router.push("/");
         return;
       }
       setRoom(r);
@@ -107,11 +110,15 @@ export default function RoomPage() {
         players={room.players ?? {}}
         settings={room.settings}
         isHost={isHost}
+        myId={myId}
         onStart={async () => {
           const locs = await pickRoundLocations(room.settings.rounds);
           await startGame(code, locs);
         }}
         onUpdateSettings={updateSettings}
+        onKick={(playerId) => kickPlayer(code, playerId)}
+        onClose={async () => { await closeRoom(code); router.push("/"); }}
+        onLeave={async () => { await leaveRoom(code); router.push("/"); }}
       />
     );
   }

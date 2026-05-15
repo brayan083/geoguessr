@@ -11,3 +11,67 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+
+/* ── Light mode ─────────────────────────────────────────────── */
+html:not(.dark) {
+  --bg-base:    #f8fafc;   /* slate-50  */
+  --bg-card:    #ffffff;
+  --bg-muted:   #f1f5f9;   /* slate-100 */
+  --bg-subtle:  #e2e8f0;   /* slate-200 */
+  --text-base:  #0f172a;   /* slate-900 */
+  --text-muted: #475569;   /* slate-600 */
+  --text-soft:  #64748b;   /* slate-500 */
+  --border:     #cbd5e1;   /* slate-300 */
+}
+
+html:not(.dark) body {
+  background-color: var(--bg-base);
+  color: var(--text-base);
+}
+
+/* Fondos */
+html:not(.dark) .bg-slate-900,
+html:not(.dark) .bg-slate-900\/80 { background-color: var(--bg-card) !important; }
+html:not(.dark) .bg-slate-800     { background-color: var(--bg-muted) !important; }
+html:not(.dark) .bg-slate-700     { background-color: var(--bg-subtle) !important; }
+
+/* Gradiente del fondo principal */
+html:not(.dark) .from-slate-900 { --tw-gradient-from: #dbeafe !important; }  /* blue-100 */
+html:not(.dark) .via-slate-800  { --tw-gradient-via:  #f0fdf4 !important; }  /* green-50 */
+html:not(.dark) .to-emerald-900 { --tw-gradient-to:   #ecfdf5 !important; }  /* emerald-50 */
+
+/* Textos */
+html:not(.dark) .text-white      { color: var(--text-base) !important; }
+html:not(.dark) .text-slate-400  { color: var(--text-muted) !important; }
+html:not(.dark) .text-slate-300  { color: var(--text-soft) !important; }
+html:not(.dark) .text-slate-500  { color: var(--text-soft) !important; }
+
+/* Bordes / rings */
+html:not(.dark) .ring-slate-700  { --tw-ring-color: var(--border) !important; }
+html:not(.dark) .ring-white\/10  { --tw-ring-color: rgba(0,0,0,0.08) !important; }
+html:not(.dark) .border-slate-700 { border-color: var(--border) !important; }
+html:not(.dark) .bg-slate-700.h-px { background-color: var(--border) !important; }
+
+/* HUD en partida (fondo negro → blanco con sombra) */
+html:not(.dark) .bg-black\/70 {
+  background-color: rgba(255,255,255,0.92) !important;
+  color: var(--text-base) !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+html:not(.dark) .bg-black\/20  { background-color: rgba(0,0,0,0.06) !important; }
+
+/* Inputs */
+html:not(.dark) input {
+  background-color: var(--bg-muted) !important;
+  color: var(--text-base) !important;
+  border-color: var(--border) !important;
+}
+html:not(.dark) input::placeholder { color: var(--text-soft) !important; }
+
+/* Botón toggle de tema */
+html:not(.dark) .dark\:bg-white\/10 { background-color: rgba(0,0,0,0.07) !important; }
+html:not(.dark) .dark\:hover\:bg-white\/20:hover { background-color: rgba(0,0,0,0.13) !important; }
+
+/* Mensajes de error */
+html:not(.dark) .bg-red-900\/40 { background-color: #fee2e2 !important; } /* red-100 */
+html:not(.dark) .text-red-300   { color: #b91c1c !important; }            /* red-700 */

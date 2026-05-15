@@ -13,7 +13,6 @@ interface Props {
   };
   onGuessChange?: (position: LatLng | null) => void;
   expanded: boolean;
-  onExpandToggle?: () => void;
 }
 
 const containerStyle = { width: "100%", height: "100%" };
@@ -23,7 +22,6 @@ export function GuessMap({
   reveal,
   onGuessChange,
   expanded,
-  onExpandToggle,
 }: Props) {
   const { isLoaded } = useGoogleMapsLoader();
   const [guess, setGuess] = useState<LatLng | null>(null);
@@ -132,15 +130,6 @@ export function GuessMap({
           )
         )}
       </GoogleMap>
-      {onExpandToggle && !reveal && (
-        <button
-          onClick={onExpandToggle}
-          className="absolute right-2 top-2 rounded bg-black/60 px-2 py-1 text-xs text-white hover:bg-black/80"
-          aria-label="Expandir mapa"
-        >
-          {expanded ? "Colapsar" : "Expandir"}
-        </button>
-      )}
     </div>
   );
 }

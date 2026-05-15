@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createRoom, joinRoom } from "@/lib/room";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export default function HomePage() {
   const router = useRouter();
@@ -54,6 +55,9 @@ export default function HomePage() {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 p-6">
+      <div className="absolute right-4 top-4">
+        <ThemeToggle />
+      </div>
       <div className="w-full max-w-md rounded-2xl bg-slate-900/80 p-8 shadow-2xl ring-1 ring-white/10 backdrop-blur">
         <h1 className="mb-2 text-center text-4xl font-bold">
           <span className="text-brand-light">Geo</span>Guessr

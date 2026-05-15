@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { StreetViewPanorama } from "./StreetViewPanorama";
 import { GuessMap } from "./GuessMap";
 import { Timer } from "./Timer";
+import { ThemeToggle } from "./ThemeToggle";
 import type { LatLng, Player, Round, RoomSettings } from "@/types/game";
 
 interface Props {
@@ -72,6 +73,7 @@ export function GameView({
     <div className="relative h-screen w-screen overflow-hidden">
       <StreetViewPanorama
         position={round.location}
+        panoId={round.panoId}
         allowMove={settings.allowMove}
         allowZoom={settings.allowZoom}
       />
@@ -92,12 +94,17 @@ export function GameView({
             onExpire={isHost ? handleTimerExpire : undefined}
           />
         </div>
-        <div className="pointer-events-auto rounded-lg bg-black/70 px-4 py-2 text-white">
-          <div className="text-xs uppercase tracking-wider text-slate-300">
-            Enviados
+        <div className="flex items-start gap-2">
+          <div className="pointer-events-auto rounded-lg bg-black/70 px-4 py-2 text-white">
+            <div className="text-xs uppercase tracking-wider text-slate-300">
+              Enviados
+            </div>
+            <div className="text-lg font-bold">
+              {submittedCount} / {totalPlayers}
+            </div>
           </div>
-          <div className="text-lg font-bold">
-            {submittedCount} / {totalPlayers}
+          <div className="pointer-events-auto">
+            <ThemeToggle />
           </div>
         </div>
       </div>
@@ -108,10 +115,15 @@ export function GameView({
       >
         <GuessMap
           expanded={expanded}
-          onExpandToggle={() => setExpanded((v) => !v)}
           onGuessChange={setGuess}
         />
-        <div className="absolute -top-12 left-0 right-0 flex justify-end">
+        <div className="absolute -top-12 left-0 right-0 flex justify-end gap-2">
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            className="rounded-lg bg-black/70 px-4 py-2 font-bold text-white shadow-lg transition hover:bg-black/90"
+          >
+            {expanded ? "Colapsar" : "Expandir"}
+          </button>
           <button
             onClick={handleSubmit}
             disabled={!guess || alreadySubmitted || submitting}
