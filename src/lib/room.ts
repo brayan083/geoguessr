@@ -18,7 +18,27 @@ import {
 } from "@/types/game";
 import type { StreetViewLocation } from "./locations";
 
-const ROOM_TTL_MS = 1000 * 60 * 60 * 6; // 6 horas
+const ROOM_TTL_MS = 1000 * 60 * 60 * 12; // 12 horas
+
+/**
+ * Borra todas las salas expiradas. Llamar al arrancar la app.
+ */
+export async function cleanupStaleRooms(): Promise<void> {
+  const db = getFirebaseDb();
+  const { remove } = await import("firebase/database");
+  const snap = await get(ref(db, "rooms"));
+  if (!snap.exists()) return;
+  const now = Date.now();
+  const deletes: Promise<void>[] = [];
+  snap.forEach((child) => {
+    const room = child.val() as Room;
+    const ttl = ROOM_TTL_MS;
+    if (now - room.createdAt > ttl) {
+      deletes.push(remove(ref(db, `rooms/${child.key}`)));
+    }
+  });
+  await Promise.all(deletes);
+}
 
 /**
  * Crea una nueva sala en Firebase con el usuario actual como host.
