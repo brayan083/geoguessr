@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/lib/ThemeProvider";
 export const metadata: Metadata = {
   title: "GeoGuessr Clone",
   description: "Adivina la ubicación a partir de Street View. Juega solo o con amigos.",
+  icons: { icon: "/favicon.svg" },
 };
 
 export default function RootLayout({
