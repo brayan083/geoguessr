@@ -159,6 +159,15 @@ export function GameView({
         allowZoom={settings.allowZoom}
       />
 
+      {/* Banner ronda doble */}
+      {round.isDouble && (
+        <div className="pointer-events-none absolute left-1/2 top-20 z-20 -translate-x-1/2">
+          <div className="animate-bounce rounded-full bg-yellow-400 px-5 py-1.5 text-sm font-bold text-slate-900 shadow-lg">
+            ⚡ ¡RONDA DOBLE — PUNTOS x2!
+          </div>
+        </div>
+      )}
+
       {/* HUD superior */}
       <div className="pointer-events-none absolute left-0 right-0 top-0 z-10 flex justify-between p-4">
         <div className="flex items-start gap-2">
@@ -166,9 +175,12 @@ export function GameView({
             <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
               Ronda
             </div>
-            <div className="text-xl font-bold tabular-nums">
+            <div className="flex items-center gap-2 text-xl font-bold tabular-nums">
               {round.index + 1}
               <span className="text-sm font-normal text-slate-400"> / {settings.rounds}</span>
+              {round.isDouble && (
+                <span className="rounded-full bg-yellow-400 px-2 py-0.5 text-xs font-bold text-slate-900">x2</span>
+              )}
             </div>
           </div>
           <button

@@ -144,12 +144,18 @@ export async function startGame(code: string, locations: StreetViewLocation[]): 
   const now = Date.now();
   const endsAt = now + room.settings.roundDurationSec * 1000;
 
+  // Una ronda aleatoria (no la primera) será ronda doble
+  const doubleIndex = locations.length > 1
+    ? 1 + Math.floor(Math.random() * (locations.length - 1))
+    : -1;
+
   const rounds: Record<string, any> = {};
   locations.forEach(({ position, panoId }, i) => {
     rounds[`r${i}`] = {
       index: i,
       location: position,
       panoId,
+      isDouble: i === doubleIndex,
       startedAt: i === 0 ? now : 0,
       endsAt: i === 0 ? endsAt : 0,
       guesses: {},
@@ -183,13 +189,18 @@ export async function submitGuess(
   if (round.guesses?.[uid]) return; // ya envió, ignorar
 
   const km = distanceKm(guess, round.location);
-  const score = scoreFromDistance(km);
+  const baseScore = scoreFromDistance(km);
+
+  const multiplier = round.isDouble ? 2 : 1;
+  const score = Math.round(baseScore * multiplier);
 
   const updates: Record<string, any> = {};
   updates[`rounds/r${roundIndex}/guesses/${uid}`] = {
     playerId: uid,
     position: guess,
     distanceKm: km,
+    baseScore,
+    speedBonus: 0,
     score,
     submittedAt: Date.now(),
   };

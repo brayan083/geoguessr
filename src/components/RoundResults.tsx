@@ -48,6 +48,7 @@ export function RoundResults({
       color: COLORS[playerIds.indexOf(id) % COLORS.length],
       score: guesses[id]?.score ?? 0,
       distance: guesses[id]?.distanceKm ?? null,
+      speedBonus: guesses[id]?.speedBonus ?? 0,
       submitted: !!guesses[id],
     }))
     .sort((a, b) => b.score - a.score);
@@ -63,9 +64,14 @@ export function RoundResults({
       <aside className="flex w-80 flex-col bg-slate-900 shadow-2xl">
         {/* Cabecera */}
         <div className="border-b border-slate-800 px-6 py-5">
-          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
-            Ronda {round.index + 1}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+              Ronda {round.index + 1}
+            </p>
+            {round.isDouble && (
+              <span className="rounded-full bg-yellow-400 px-2 py-0.5 text-xs font-bold text-slate-900">⚡ x2</span>
+            )}
+          </div>
           <h2 className="mt-0.5 text-2xl font-bold">Resultados</h2>
         </div>
 
@@ -92,11 +98,18 @@ export function RoundResults({
               {/* Info */}
               <div className="min-w-0 flex-1">
                 <p className="truncate font-semibold">{p.name}</p>
-                <p className="text-xs text-slate-400">
-                  {p.submitted
-                    ? `${formatDistance(p.distance ?? 0)} de distancia`
-                    : "Sin respuesta"}
-                </p>
+                <div className="flex flex-wrap items-center gap-1 mt-0.5">
+                  <p className="text-xs text-slate-400">
+                    {p.submitted
+                      ? `${formatDistance(p.distance ?? 0)}`
+                      : "Sin respuesta"}
+                  </p>
+{round.isDouble && p.submitted && (
+                    <span className="rounded-full bg-yellow-400/20 px-1.5 py-0.5 text-[10px] font-bold text-yellow-400">
+                      x2
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Puntos */}

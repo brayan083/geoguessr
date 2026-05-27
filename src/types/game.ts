@@ -14,7 +14,9 @@ export interface Guess {
   playerId: string;
   position: LatLng;
   distanceKm: number;
-  score: number;
+  score: number;        // puntuación base (ya con x2 si aplica)
+  baseScore: number;   // puntuación de distancia antes de bonuses
+  speedBonus: number;  // bonus por velocidad (0 si no aplica)
   submittedAt: number;
 }
 
@@ -24,6 +26,7 @@ export interface Round {
   panoId: string;
   startedAt: number;
   endsAt: number;
+  isDouble: boolean;   // true → todos los puntos de esta ronda valen x2
   guesses: Record<string, Guess>;
 }
 
