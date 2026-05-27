@@ -53,60 +53,83 @@ export function RoundResults({
     .sort((a, b) => b.score - a.score);
 
   return (
-    <div className="flex h-screen w-screen flex-col bg-slate-900 text-white">
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1">
-          <GuessMap
-            expanded
-            reveal={{ actual: round.location, guesses: revealGuesses }}
-          />
-        </div>
-        <aside className="w-80 overflow-y-auto bg-slate-800 p-6">
-          <h2 className="mb-1 text-2xl font-bold">Resultados de la ronda</h2>
-          <p className="mb-6 text-sm text-slate-400">
+    <div className="flex h-screen w-screen overflow-hidden bg-slate-950 text-white">
+      {/* Mapa */}
+      <div className="flex-1">
+        <GuessMap expanded reveal={{ actual: round.location, guesses: revealGuesses }} />
+      </div>
+
+      {/* Panel lateral */}
+      <aside className="flex w-80 flex-col bg-slate-900 shadow-2xl">
+        {/* Cabecera */}
+        <div className="border-b border-slate-800 px-6 py-5">
+          <p className="text-xs font-semibold uppercase tracking-widest text-slate-500">
             Ronda {round.index + 1}
           </p>
-          <ul className="space-y-3">
-            {ranking.map((p) => (
-              <li
-                key={p.id}
-                className="rounded-lg bg-slate-900 p-3 ring-1 ring-slate-700"
+          <h2 className="mt-0.5 text-2xl font-bold">Resultados</h2>
+        </div>
+
+        {/* Ranking */}
+        <ul className="flex-1 space-y-2 overflow-y-auto px-4 py-4">
+          {ranking.map((p, i) => (
+            <li
+              key={p.id}
+              className="flex items-center gap-3 rounded-xl bg-slate-800 px-4 py-3 ring-1 ring-slate-700"
+            >
+              {/* Posición */}
+              <span className="w-5 text-center text-sm font-bold text-slate-500">
+                {i + 1}
+              </span>
+
+              {/* Avatar */}
+              <div
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                style={{ backgroundColor: p.color }}
               >
-                <div className="mb-1 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: p.color }}
-                    />
-                    <span className="font-semibold">{p.name}</span>
-                  </div>
-                  <span className="text-lg font-bold text-brand">
-                    {p.score}
-                  </span>
-                </div>
-                <div className="text-xs text-slate-400">
+                {p.name?.[0]?.toUpperCase() ?? "?"}
+              </div>
+
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">{p.name}</p>
+                <p className="text-xs text-slate-400">
                   {p.submitted
-                    ? `a ${formatDistance(p.distance ?? 0)} de distancia`
+                    ? `${formatDistance(p.distance ?? 0)} de distancia`
                     : "Sin respuesta"}
-                </div>
-              </li>
-            ))}
-          </ul>
-          {isHost && (
+                </p>
+              </div>
+
+              {/* Puntos */}
+              <span
+                className="text-lg font-bold tabular-nums"
+                style={{ color: p.color }}
+              >
+                {p.score.toLocaleString()}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Footer */}
+        <div className="border-t border-slate-800 px-4 py-4">
+          {isHost ? (
             <button
               onClick={onNext}
-              className="mt-6 w-full rounded-lg bg-brand py-3 font-bold text-white transition hover:bg-brand-dark"
+              className="w-full rounded-xl bg-brand py-3 font-bold text-white transition hover:bg-brand-dark active:scale-95"
             >
               {isLastRound ? "Ver resultado final" : "Siguiente ronda"}
             </button>
+          ) : (
+            <div className="flex items-center justify-center gap-2 rounded-xl bg-slate-800 py-3 text-sm text-slate-400">
+              <svg className="h-4 w-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+              </svg>
+              Esperando al anfitrión…
+            </div>
           )}
-          {!isHost && (
-            <p className="mt-6 text-center text-sm text-slate-400">
-              Esperando al anfitrión...
-            </p>
-          )}
-        </aside>
-      </div>
+        </div>
+      </aside>
     </div>
   );
 }
