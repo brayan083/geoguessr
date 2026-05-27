@@ -582,13 +582,45 @@ function randomGlobal(): LatLng {
   };
 }
 
-function isOutdoorPano(data: google.maps.StreetViewPanoramaData): boolean {
-  // Rechazar panoramas sin links de navegación
-  if (!data.links || data.links.length === 0) return false;
-  // Rechazar si el copyright indica que es de un negocio/interior (contiene ©)
-  // Los panoramas de Google Street View official tienen copyright "Google"
+// Palabras clave que delatan interiores, propiedades privadas o ubicaciones no-vía-pública
+const INDOOR_KEYWORDS = [
+  // interiores genéricos
+  "hotel", "mall", "shopping", "airport", "aeropuerto", "museum", "museo",
+  "hospital", "store", "tienda", "restaurant", "café", "cafe", "bar ",
+  "stadium", "estadio", "arena", "gym", "gimnasio", "office", "oficina",
+  "university", "universidad", "school", "escuela", "church", "iglesia",
+  "temple", "templo", "mosque", "mezquita", "palace", "palacio",
+  // barcos y agua
+  "cruise", "ship", "ferry", "boat", "vessel", "pier", "dock", "port",
+  // sky/altitude / edificios
+  "rooftop", "roof ", "terrace", "terraza", "observation deck", "tower",
+  "ski ", "ski resort", "gondola", "cable car",
+  // parques temáticos / privados
+  "theme park", "amusement", "resort", "zoo",
+];
+
+function isPublicRoadPano(data: google.maps.StreetViewPanoramaData): boolean {
+  // 1. Debe tener links de navegación — los interiores y puntos aislados no los tienen
+  if (!data.links || data.links.length < 2) return false;
+
+  // 2. El copyright debe ser de Google (Street View oficial).
+  //    Los panoramas de negocios, museos, etc. tienen otro autor.
   const copy = (data.copyright ?? "").toLowerCase();
   if (copy && !copy.includes("google")) return false;
+
+  // 3. La descripción de la ubicación no debe contener palabras de interior/privado
+  const description = [
+    data.location?.description ?? "",
+  ].join(" ").toLowerCase();
+  if (INDOOR_KEYWORDS.some((kw) => description.includes(kw))) return false;
+
+  // 4. El panoId no debe corresponder a un panorama de Google Business Photos
+  //    (los IDs de Business Photos son cadenas largas con formato diferente a los
+  //    IDs de carretera que suelen ser alfanuméricos de ~22 chars)
+  const pano = data.location?.pano ?? "";
+  // Business Photos y User Photos suelen tener IDs con "AF1Qip" o muy largos (>30 chars)
+  if (pano.startsWith("AF1Qip") || pano.length > 30) return false;
+
   return true;
 }
 
@@ -602,7 +634,7 @@ function findStreetView(candidate: LatLng, radius: number): Promise<StreetViewLo
           status === google.maps.StreetViewStatus.OK &&
           data?.location?.latLng &&
           data?.location?.pano &&
-          isOutdoorPano(data)
+          isPublicRoadPano(data)
         ) {
           resolve({
             position: { lat: data.location.latLng.lat(), lng: data.location.latLng.lng() },
