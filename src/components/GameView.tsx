@@ -26,7 +26,7 @@ export function GameView({
   onSubmitGuess,
   onAllSubmittedOrExpired,
 }: Props) {
-  const [guess, setGuess] = useState<LatLng | null>(null);
+  const [selectedGuess, setSelectedGuess] = useState<LatLng | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const advancedRef = useRef(false);
@@ -38,9 +38,10 @@ export function GameView({
   // Resetear el guard cuando cambia la ronda
   useEffect(() => {
     advancedRef.current = false;
+    setSelectedGuess(null);
   }, [round.index]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (guess: LatLng | null = selectedGuess) => {
     if (!guess || alreadySubmitted) return;
     setSubmitting(true);
     try {
@@ -48,6 +49,11 @@ export function GameView({
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleGuessSelected = (position: LatLng | null) => {
+    if (alreadySubmitted || !position) return;
+    setSelectedGuess(position);
   };
 
   // El host vigila la condición de finalización de ronda (una sola vez por ronda).
@@ -59,10 +65,21 @@ export function GameView({
     }
   }, [isHost, submittedCount, totalPlayers, onAllSubmittedOrExpired]);
 
-  const handleTimerExpire = () => {
-    if (!isHost || advancedRef.current) return;
+  const handleTimerExpire = async () => {
+    if (advancedRef.current) return;
     advancedRef.current = true;
-    onAllSubmittedOrExpired();
+
+    if (selectedGuess && !alreadySubmitted) {
+      try {
+        await onSubmitGuess(selectedGuess);
+      } catch {
+        // No cortar el avance si el envío falla en el cliente.
+      }
+    }
+
+    if (isHost) {
+      onAllSubmittedOrExpired();
+    }
   };
 
   const mapSizeClasses = expanded
@@ -88,11 +105,16 @@ export function GameView({
             {round.index + 1}
           </div>
         </div>
-        <div className="pointer-events-auto">
+        <div className="pointer-events-auto flex flex-col items-center gap-1">
           <Timer
             endsAt={round.endsAt}
-            onExpire={isHost ? handleTimerExpire : undefined}
+            onExpire={handleTimerExpire}
           />
+          {!alreadySubmitted && (
+            <span className="rounded-md bg-black/60 px-2 py-0.5 text-xs text-slate-300 backdrop-blur-sm">
+              Haz clic en el mapa para elegir
+            </span>
+          )}
         </div>
         <div className="flex items-start gap-2">
           <div className="pointer-events-auto rounded-lg bg-black/70 px-4 py-2 text-white">
@@ -115,26 +137,25 @@ export function GameView({
       >
         <GuessMap
           expanded={expanded}
-          onGuessChange={setGuess}
+          onGuessChange={handleGuessSelected}
+          disabled={alreadySubmitted}
         />
-        <div className="absolute -top-12 left-0 right-0 flex justify-end gap-2">
+        <div className="absolute -top-12 left-0 right-0 flex justify-between gap-2">
           <button
             onClick={() => setExpanded((v) => !v)}
             className="rounded-lg bg-black/70 px-4 py-2 font-bold text-white shadow-lg transition hover:bg-black/90"
           >
             {expanded ? "Colapsar" : "Expandir"}
           </button>
-          <button
-            onClick={handleSubmit}
-            disabled={!guess || alreadySubmitted || submitting}
-            className="rounded-lg bg-brand px-6 py-2 font-bold text-white shadow-lg transition hover:bg-brand-dark disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {alreadySubmitted
-              ? "Esperando..."
-              : submitting
-              ? "Enviando..."
-              : "Adivinar"}
-          </button>
+          {selectedGuess && !alreadySubmitted && (
+            <button
+              onClick={() => handleSubmit()}
+              disabled={submitting}
+              className="rounded-lg bg-brand px-4 py-2 font-bold text-white shadow-lg transition hover:bg-brand-dark disabled:opacity-60"
+            >
+              ¡Confirmar!
+            </button>
+          )}
         </div>
       </div>
     </div>

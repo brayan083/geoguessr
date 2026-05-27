@@ -13,6 +13,7 @@ interface Props {
   };
   onGuessChange?: (position: LatLng | null) => void;
   expanded: boolean;
+  disabled?: boolean;
 }
 
 const containerStyle = { width: "100%", height: "100%" };
@@ -22,18 +23,19 @@ export function GuessMap({
   reveal,
   onGuessChange,
   expanded,
+  disabled = false,
 }: Props) {
   const { isLoaded } = useGoogleMapsLoader();
   const [guess, setGuess] = useState<LatLng | null>(null);
 
   const handleClick = useCallback(
     (e: google.maps.MapMouseEvent) => {
-      if (reveal || !e.latLng) return;
+      if (reveal || disabled || !e.latLng) return;
       const pos = { lat: e.latLng.lat(), lng: e.latLng.lng() };
       setGuess(pos);
       onGuessChange?.(pos);
     },
-    [reveal, onGuessChange],
+    [reveal, disabled, onGuessChange],
   );
 
   if (!isLoaded) {

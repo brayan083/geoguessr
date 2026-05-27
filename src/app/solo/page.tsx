@@ -158,30 +158,38 @@ export default function SoloPage() {
         allowZoom={DEFAULT_SETTINGS.allowZoom}
       />
       <div className="pointer-events-none absolute left-0 right-0 top-0 z-10 flex justify-between p-4">
-        <div className="pointer-events-auto rounded-lg bg-black/70 px-4 py-2">
+        <div className="pointer-events-auto self-start rounded-lg bg-black/70 px-4 py-2 text-white">
           Ronda <strong>{round + 1}/{TOTAL_ROUNDS}</strong>
         </div>
-        <Timer endsAt={endsAt} onExpire={submit} />
+        <div className="pointer-events-auto flex flex-col items-center gap-1 self-start">
+          <Timer endsAt={endsAt} onExpire={submit} />
+          <span className="rounded-md bg-black/60 px-2 py-0.5 text-xs text-slate-300 backdrop-blur-sm">
+            Haz clic en el mapa para elegir
+          </span>
+        </div>
         <div className="pointer-events-auto">
           <ThemeToggle />
         </div>
       </div>
       <div className={`absolute bottom-4 right-4 z-10 transition-all ${expanded ? "h-[70vh] w-[70vw]" : "h-48 w-72 sm:h-64 sm:w-96"}`}>
-        <GuessMap expanded={expanded} onGuessChange={setGuess} />
-        <div className="absolute -top-12 left-0 right-0 flex justify-end gap-2">
+        <GuessMap expanded={expanded} onGuessChange={(position) => {
+          if (position) setGuess(position);
+        }} />
+        <div className="absolute -top-12 left-0 right-0 flex justify-between gap-2">
           <button
             onClick={() => setExpanded((v) => !v)}
             className="rounded-lg bg-black/70 px-4 py-2 font-bold text-white shadow-lg hover:bg-black/90"
           >
             {expanded ? "Colapsar" : "Expandir"}
           </button>
-          <button
-            onClick={submit}
-            disabled={!guess}
-            className="rounded-lg bg-brand px-6 py-2 font-bold text-white shadow-lg hover:bg-brand-dark disabled:opacity-50"
-          >
-            Adivinar
-          </button>
+          {guess && (
+            <button
+              onClick={submit}
+              className="rounded-lg bg-brand px-4 py-2 font-bold text-white shadow-lg hover:bg-brand-dark"
+            >
+              ¡Confirmar!
+            </button>
+          )}
         </div>
       </div>
     </div>
