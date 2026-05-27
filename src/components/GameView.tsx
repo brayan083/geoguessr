@@ -86,6 +86,48 @@ export function GameView({
     ? "h-[70vh] w-[70vw]"
     : "h-48 w-72 sm:h-64 sm:w-96";
 
+  if (alreadySubmitted) {
+    return (
+      <div className="flex h-screen w-screen flex-col items-center justify-center gap-6 bg-slate-900 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand/20 ring-2 ring-brand">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8 text-brand">
+              <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold">¡Ubicación enviada!</h2>
+          <p className="text-slate-400">Esperando a los demás jugadores…</p>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <p className="text-sm text-slate-500">Jugadores listos</p>
+          <p className="text-3xl font-bold tabular-nums">
+            {submittedCount} <span className="text-slate-500">/ {totalPlayers}</span>
+          </p>
+          <div className="mt-2 flex gap-2">
+            {Object.values(players).map((p) => {
+              const done = !!round.guesses?.[p.id];
+              return (
+                <div
+                  key={p.id}
+                  title={p.name}
+                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ring-2 transition-all ${
+                    done ? "bg-brand ring-brand" : "bg-slate-700 ring-slate-600"
+                  }`}
+                >
+                  {p.name?.[0]?.toUpperCase() ?? "?"}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-1">
+          <Timer endsAt={round.endsAt} onExpire={handleTimerExpire} />
+          <p className="text-xs text-slate-500">Tiempo restante</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative h-screen w-screen overflow-hidden">
       <StreetViewPanorama
