@@ -5,6 +5,7 @@ import {
   update,
   onValue,
   off,
+  onDisconnect,
   type Unsubscribe,
 } from "firebase/database";
 import { getFirebaseDb, ensureSignedIn } from "./firebase";
@@ -263,6 +264,26 @@ export async function closeRoom(code: string): Promise<void> {
   const db = getFirebaseDb();
   const { remove } = await import("firebase/database");
   await remove(ref(db, `rooms/${code}`));
+}
+
+/**
+ * Registra onDisconnect para eliminar al jugador si se corta la conexión.
+ * Devuelve una función cancel() para cancelarlo (ej. al salir voluntariamente).
+ */
+export async function registerDisconnect(code: string): Promise<() => void> {
+  const uid = await ensureSignedIn();
+  const db = getFirebaseDb();
+  const { remove } = await import("firebase/database");
+  const playerRef = ref(db, `rooms/${code}/players/${uid}`);
+  const totalRef = ref(db, `rooms/${code}/totals/${uid}`);
+  const disconnectPlayer = onDisconnect(playerRef);
+  const disconnectTotal = onDisconnect(totalRef);
+  await disconnectPlayer.remove();
+  await disconnectTotal.remove();
+  return () => {
+    disconnectPlayer.cancel();
+    disconnectTotal.cancel();
+  };
 }
 
 /**

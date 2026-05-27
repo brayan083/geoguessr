@@ -14,6 +14,7 @@ import {
   leaveRoom,
   nextRound,
   playAgain,
+  registerDisconnect,
   showRoundResults,
   startGame,
   submitGuess,
@@ -36,9 +37,11 @@ export default function RoomPage() {
   const [room, setRoom] = useState<Room | null>(null);
   const [myId, setMyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [cancelDisconnect, setCancelDisconnect] = useState<(() => void) | null>(null);
 
-  // Asegura autenticación + autojoin si llegamos por enlace directo
+  // Asegura autenticación + autojoin + onDisconnect
   useEffect(() => {
+    let cancelDisconnect: (() => void) | null = null;
     (async () => {
       try {
         const uid = await ensureSignedIn();
@@ -52,10 +55,15 @@ export default function RoomPage() {
         } catch {
           // si la sala ya empezó y no estamos en ella, joinRoom lanza error
         }
+        cancelDisconnect = await registerDisconnect(code);
+        setCancelDisconnect(() => cancelDisconnect);
       } catch (e: any) {
         setError(e.message ?? "No se pudo entrar a la sala");
       }
     })();
+    return () => {
+      cancelDisconnect?.();
+    };
   }, [code]);
 
   // Suscripción reactiva
@@ -117,8 +125,8 @@ export default function RoomPage() {
         }}
         onUpdateSettings={updateSettings}
         onKick={(playerId) => kickPlayer(code, playerId)}
-        onClose={async () => { await closeRoom(code); router.push("/"); }}
-        onLeave={async () => { await leaveRoom(code); router.push("/"); }}
+        onClose={async () => { cancelDisconnect?.(); await closeRoom(code); router.push("/"); }}
+        onLeave={async () => { cancelDisconnect?.(); await leaveRoom(code); router.push("/"); }}
       />
     );
   }
@@ -135,6 +143,7 @@ export default function RoomPage() {
         isHost={isHost}
         onSubmitGuess={(g: LatLng) => submitGuess(code, room.currentRound, g)}
         onAllSubmittedOrExpired={() => showRoundResults(code)}
+        onLeave={async () => { cancelDisconnect?.(); await leaveRoom(code); router.push("/"); }}
       />
     );
   }

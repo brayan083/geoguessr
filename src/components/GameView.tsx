@@ -15,6 +15,7 @@ interface Props {
   isHost: boolean;
   onSubmitGuess: (g: LatLng) => Promise<void> | void;
   onAllSubmittedOrExpired: () => void;
+  onLeave: () => void;
 }
 
 export function GameView({
@@ -25,6 +26,7 @@ export function GameView({
   isHost,
   onSubmitGuess,
   onAllSubmittedOrExpired,
+  onLeave,
 }: Props) {
   const [selectedGuess, setSelectedGuess] = useState<LatLng | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -139,13 +141,22 @@ export function GameView({
 
       {/* HUD superior */}
       <div className="pointer-events-none absolute left-0 right-0 top-0 z-10 flex justify-between p-4">
-        <div className="pointer-events-auto rounded-lg bg-black/70 px-4 py-2 text-white">
-          <div className="text-xs uppercase tracking-wider text-slate-300">
-            Ronda
+        <div className="flex items-start gap-2">
+          <div className="pointer-events-auto rounded-xl bg-black/70 px-4 py-2.5 text-white backdrop-blur-sm">
+            <div className="text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+              Ronda
+            </div>
+            <div className="text-xl font-bold tabular-nums">
+              {round.index + 1}
+              <span className="text-sm font-normal text-slate-400"> / {settings.rounds}</span>
+            </div>
           </div>
-          <div className="text-lg font-bold">
-            {round.index + 1}
-          </div>
+          <button
+            onClick={onLeave}
+            className="pointer-events-auto rounded-xl bg-black/70 px-3 py-2.5 text-sm font-semibold text-slate-300 backdrop-blur-sm transition hover:bg-red-600 hover:text-white"
+          >
+            Salir
+          </button>
         </div>
         <div className="pointer-events-auto flex flex-col items-center gap-1">
           <Timer
@@ -158,16 +169,39 @@ export function GameView({
             </span>
           )}
         </div>
-        <div className="flex items-start gap-2">
-          <div className="pointer-events-auto rounded-lg bg-black/70 px-4 py-2 text-white">
-            <div className="text-xs uppercase tracking-wider text-slate-300">
-              Enviados
-            </div>
-            <div className="text-lg font-bold">
-              {submittedCount} / {totalPlayers}
+        <div className="pointer-events-auto flex flex-col gap-1.5">
+          {/* Tabla de jugadores */}
+          <div className="rounded-xl bg-black/70 px-3 py-2 backdrop-blur-sm">
+            <p className="mb-1.5 text-center text-[10px] font-semibold uppercase tracking-widest text-slate-400">
+              Jugadores
+            </p>
+            <div className="flex flex-col gap-1">
+              {Object.values(players).map((p) => {
+                const done = !!round.guesses?.[p.id];
+                return (
+                  <div key={p.id} className="flex items-center gap-2">
+                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${done ? "bg-brand text-white" : "bg-slate-600 text-slate-300"}`}>
+                      {p.name?.[0]?.toUpperCase() ?? "?"}
+                    </div>
+                    <span className={`text-sm font-medium ${done ? "text-white" : "text-slate-400"}`}>
+                      {p.name}
+                    </span>
+                    <div className="ml-auto pl-2">
+                      {done ? (
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4 text-brand">
+                          <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <div className="h-4 w-4 rounded-full border-2 border-slate-600" />
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-          <div className="pointer-events-auto">
+          {/* Acciones */}
+          <div className="flex justify-end">
             <ThemeToggle />
           </div>
         </div>
