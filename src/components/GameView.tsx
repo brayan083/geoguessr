@@ -90,41 +90,61 @@ export function GameView({
 
   if (alreadySubmitted) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center gap-6 bg-slate-900 text-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-brand/20 ring-2 ring-brand">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8 text-brand">
-              <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
-            </svg>
+      <div className="flex h-screen w-screen items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 text-white">
+        <div className="flex w-full max-w-sm flex-col items-center gap-8">
+
+          {/* Check animado */}
+          <div className="relative flex h-20 w-20 items-center justify-center">
+            <div className="absolute inset-0 animate-ping rounded-full bg-brand/20" />
+            <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-brand/20 ring-2 ring-brand">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-10 w-10 text-brand">
+                <path fillRule="evenodd" d="M19.916 4.626a.75.75 0 01.208 1.04l-9 13.5a.75.75 0 01-1.154.114l-6-6a.75.75 0 011.06-1.06l5.353 5.353 8.493-12.739a.75.75 0 011.04-.208z" clipRule="evenodd" />
+              </svg>
+            </div>
           </div>
-          <h2 className="text-2xl font-bold">¡Ubicación enviada!</h2>
-          <p className="text-slate-400">Esperando a los demás jugadores…</p>
-        </div>
-        <div className="flex flex-col items-center gap-2">
-          <p className="text-sm text-slate-500">Jugadores listos</p>
-          <p className="text-3xl font-bold tabular-nums">
-            {submittedCount} <span className="text-slate-500">/ {totalPlayers}</span>
-          </p>
-          <div className="mt-2 flex gap-2">
-            {Object.values(players).map((p) => {
-              const done = !!round.guesses?.[p.id];
-              return (
-                <div
-                  key={p.id}
-                  title={p.name}
-                  className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ring-2 transition-all ${
-                    done ? "bg-brand ring-brand" : "bg-slate-700 ring-slate-600"
-                  }`}
-                >
-                  {p.name?.[0]?.toUpperCase() ?? "?"}
-                </div>
-              );
-            })}
+
+          {/* Título */}
+          <div className="flex flex-col items-center gap-1 text-center">
+            <h2 className="text-3xl font-bold">¡Ubicación enviada!</h2>
+            <p className="text-slate-400">Esperando a los demás jugadores…</p>
           </div>
-        </div>
-        <div className="flex flex-col items-center gap-1">
-          <Timer endsAt={round.endsAt} onExpire={handleTimerExpire} />
-          <p className="text-xs text-slate-500">Tiempo restante</p>
+
+          {/* Tarjeta de jugadores */}
+          <div className="w-full rounded-2xl bg-slate-800/60 p-5 ring-1 ring-white/10 backdrop-blur-sm">
+            <p className="mb-3 text-center text-xs font-semibold uppercase tracking-widest text-slate-500">
+              Jugadores listos — {submittedCount} / {totalPlayers}
+            </p>
+            <div className="flex flex-col gap-2">
+              {Object.values(players).map((p) => {
+                const done = !!round.guesses?.[p.id];
+                return (
+                  <div key={p.id} className={`flex items-center gap-3 rounded-xl px-3 py-2 transition-all ${done ? "bg-brand/15 ring-1 ring-brand/30" : "bg-slate-700/50"}`}>
+                    <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${done ? "bg-brand text-white" : "bg-slate-600 text-slate-300"}`}>
+                      {p.name?.[0]?.toUpperCase() ?? "?"}
+                    </div>
+                    <span className={`flex-1 font-medium ${done ? "text-white" : "text-slate-400"}`}>{p.name}</span>
+                    {done ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5 text-brand">
+                        <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5 animate-spin text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
+                      </svg>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Timer */}
+          <div className="flex flex-col items-center gap-1">
+            <Timer endsAt={round.endsAt} onExpire={handleTimerExpire} />
+            <p className="text-xs text-slate-500">Tiempo restante</p>
+          </div>
+
         </div>
       </div>
     );
